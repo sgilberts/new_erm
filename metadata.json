@@ -1,0 +1,7 @@
+{
+  "name": "Encounter Rhema Ministries",
+  "description": "Enterprise-grade digital church platform for Encounter Rhema Ministries featuring live streaming, digital giving, interactive calendar, sermon CMS, member directory, real-time pastoral care chat, and automated birthday greetings.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
