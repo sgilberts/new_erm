@@ -10,6 +10,7 @@ import { hasPermission } from '../utils/rules';
 import { ThemeSwitcher } from './ThemeSwitcher';
 import { AdminPortal } from './AdminPortal';
 import { PrayerRequestsView } from './PrayerRequestsView';
+import { AudioVisualStudio } from './admin/AudioVisualStudio';
 import {
   LayoutDashboard,
   Tv,
@@ -33,6 +34,7 @@ import {
   TrendingUp,
   Clock,
   Layers,
+  Radio,
 } from 'lucide-react';
 
 export const AdminLayout: React.FC = () => {
@@ -50,12 +52,21 @@ export const AdminLayout: React.FC = () => {
     prayerRequests,
     birthdaysToday,
     chatMessages,
+    isLiveBroadcasting,
   } = useApp();
 
   const urgentPrayersCount = prayerRequests.filter((p) => p.status === 'urgent').length;
   const unreadChatCount = chatMessages.filter((m) => m.sender === 'user').length;
 
   const asideNavItems = [
+    {
+      id: 'studio',
+      label: 'AV Broadcast Studio',
+      icon: <Radio className="w-4 h-4" />,
+      badge: isLiveBroadcasting ? 'LIVE ON AIR' : 'STUDIO',
+      badgeColor: isLiveBroadcasting ? 'bg-rose-600 text-white animate-pulse font-black' : 'bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
+      allowed: hasPermission(currentUser.role, 'access_studio'),
+    },
     {
       id: 'overview',
       label: 'Overview & Charts',
@@ -333,7 +344,9 @@ export const AdminLayout: React.FC = () => {
 
         {/* Main Dashboard Content Viewport */}
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6">
-          {adminActiveSection === 'prayer' ? (
+          {adminActiveSection === 'studio' ? (
+            <AudioVisualStudio />
+          ) : adminActiveSection === 'prayer' ? (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>

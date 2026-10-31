@@ -240,7 +240,7 @@ export const Navbar: React.FC = () => {
                     <p className="px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
                       Switch Role for Testing:
                     </p>
-                    {(['super_admin', 'chat_member', 'media_admin', 'finance_deacon', 'member'] as UserRole[]).map((r) => (
+                    {(['super_admin', 'it_media', 'chat_member', 'media_admin', 'finance_deacon', 'member'] as UserRole[]).map((r) => (
                       <button
                         key={r}
                         onClick={() => {

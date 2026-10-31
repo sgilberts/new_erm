@@ -18,6 +18,7 @@ import {
   DollarSign,
   ArrowRight,
   AlertCircle,
+  Radio,
 } from 'lucide-react';
 
 export const LoginModal: React.FC = () => {
@@ -45,8 +46,8 @@ export const LoginModal: React.FC = () => {
       const lower = email.toLowerCase();
       if (lower.includes('chat') || lower.includes('josiah') || lower.includes('support')) {
         loginUser('chat_member');
-      } else if (lower.includes('media') || lower.includes('samuel')) {
-        loginUser('media_admin');
+      } else if (lower.includes('it') || lower.includes('media') || lower.includes('samuel') || lower.includes('broadcast') || lower.includes('studio')) {
+        loginUser('it_media');
       } else if (lower.includes('finance') || lower.includes('marcus') || lower.includes('deacon')) {
         loginUser('finance_deacon');
       } else {
@@ -143,19 +144,22 @@ export const LoginModal: React.FC = () => {
                 </div>
               </button>
 
-              {/* Media Admin */}
+              {/* IT & Media (AV Studio & Broadcast) */}
               <button
                 type="button"
-                onClick={() => handleRoleQuickLogin('media_admin')}
-                className="flex items-start gap-3 p-3 text-left rounded-xl border border-sky-500/30 bg-sky-500/5 hover:bg-sky-500/15 dark:bg-sky-500/10 dark:hover:bg-sky-500/20 transition-all group"
+                onClick={() => handleRoleQuickLogin('it_media')}
+                className="flex items-start gap-3 p-3 text-left rounded-xl border border-rose-500/40 bg-rose-500/10 hover:bg-rose-500/20 dark:bg-rose-500/15 dark:hover:bg-rose-500/25 transition-all group ring-1 ring-rose-500/30"
               >
-                <div className="p-2 rounded-lg bg-sky-500 text-white font-bold group-hover:scale-110 transition-transform">
-                  <Video className="w-4 h-4" />
+                <div className="p-2 rounded-lg bg-rose-600 text-white font-bold group-hover:scale-110 transition-transform shadow-md shadow-rose-600/30">
+                  <Radio className="w-4 h-4 animate-pulse" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-black text-sky-600 dark:text-sky-400">Media Admin</p>
-                  <p className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 truncate">Samuel Mensah</p>
-                  <p className="text-[10px] text-slate-500 dark:text-slate-400">Sermons & Event Broadcasts</p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-xs font-black text-rose-600 dark:text-rose-400">IT & Media Role</p>
+                    <span className="text-[9px] bg-rose-600 text-white font-black px-1.5 py-0.2 rounded-full">LIVE</span>
+                  </div>
+                  <p className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 truncate">Brother Samuel Mensah</p>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400">AV Broadcast Studio & Streaming</p>
                 </div>
               </button>
 

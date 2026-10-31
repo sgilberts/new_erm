@@ -1,1 +1,81 @@
 @import "tailwindcss";
+
+/* Tailwind CSS v4 class-based dark variant */
+@custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
+
+@layer base {
+  :root {
+    color-scheme: light;
+    --bg-page: #f8fafc;
+    --text-page: #0f172a;
+    --card-bg: #ffffff;
+    --card-border: #e2e8f0;
+    --chat-bubble-sys: #fef3c7;
+    --chat-bubble-staff: #ffffff;
+    --chat-bubble-user: #d97706;
+  }
+
+  :root.dark, html.dark, [data-theme="dark"] {
+    color-scheme: dark;
+    --bg-page: #090d16;
+    --text-page: #f8fafc;
+    --card-bg: #0f172a;
+    --card-border: #1e293b;
+    --chat-bubble-sys: #1e1b18;
+    --chat-bubble-staff: #1e293b;
+    --chat-bubble-user: #d97706;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--bg-page);
+    color: var(--text-page);
+    transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+  }
+}
+
+/* Explicit fallback theme classes to guarantee immediate visual response */
+html.dark body,
+body.dark,
+[data-theme="dark"] body {
+  background-color: #090d16 !important;
+  color: #f8fafc !important;
+}
+
+html:not(.dark) body,
+body.light,
+[data-theme="light"] body {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 9999px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+html:not(.dark) ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+html:not(.dark) ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}

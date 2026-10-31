@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-export type UserRole = 'super_admin' | 'media_admin' | 'finance_deacon' | 'chat_member' | 'member';
+export type UserRole = 'super_admin' | 'it_media' | 'media_admin' | 'finance_deacon' | 'chat_member' | 'member';
 export type ThemeMode = 'light' | 'dark' | 'system';
+export type StreamQuality = '1080p' | '720p' | '480p';
 
 export interface UserProfile {
   id: string;
@@ -180,3 +181,36 @@ export interface PrayerRequest {
   userInterceded?: boolean;
   statusHistory: PrayerStatusHistoryItem[];
 }
+
+export interface StudioDeviceInfo {
+  id: string;
+  name: string;
+  kind: 'videoinput' | 'audioinput';
+  label: string;
+  isVirtual?: boolean;
+}
+
+export interface LowerThirdOverlay {
+  enabled: boolean;
+  speakerName: string;
+  title: string;
+  scriptureText?: string;
+  themeStyle: 'gold' | 'sleek' | 'royal' | 'minimal';
+}
+
+export interface ScriptureOverlay {
+  enabled: boolean;
+  reference: string;
+  text: string;
+  version: string;
+}
+
+export interface StudioBroadcastMetrics {
+  bitrateKbps: number;
+  fps: number;
+  droppedFrames: number;
+  cpuPercent: number;
+  viewersOnline: number;
+  durationSeconds: number;
+}
+

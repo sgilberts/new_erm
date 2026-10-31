@@ -104,23 +104,26 @@ export function hasPermission(
     | 'send_birthday_broadcast'
     | 'respond_chat'
     | 'access_admin_dashboard'
+    | 'access_studio'
 ): boolean {
   if (role === 'super_admin') return true;
 
   switch (permission) {
+    case 'access_studio':
+      return role === 'it_media';
     case 'access_admin_dashboard':
-      return role === 'media_admin' || role === 'finance_deacon' || role === 'chat_member';
+      return role === 'it_media' || role === 'media_admin' || role === 'finance_deacon' || role === 'chat_member';
     case 'respond_chat':
       return role === 'chat_member';
     case 'manage_sermons':
     case 'manage_events':
-      return role === 'media_admin';
+      return role === 'it_media' || role === 'media_admin';
     case 'view_giving_totals':
     case 'manage_giving':
     case 'export_reports':
       return role === 'finance_deacon';
     case 'view_audit_logs':
-      return role === 'finance_deacon' || role === 'media_admin' || role === 'chat_member';
+      return role === 'it_media' || role === 'finance_deacon' || role === 'media_admin' || role === 'chat_member';
     case 'manage_members':
     case 'send_birthday_broadcast':
       return role === 'media_admin' || role === 'chat_member';

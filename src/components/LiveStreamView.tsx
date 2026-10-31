@@ -18,7 +18,9 @@ import {
   Maximize2,
   CheckCircle2,
   Smile,
+  Sliders,
 } from 'lucide-react';
+import { StreamQuality } from '../types';
 
 interface LiveChatMessage {
   id: string;
@@ -30,7 +32,17 @@ interface LiveChatMessage {
 }
 
 export const LiveStreamView: React.FC = () => {
-  const { setCurrentPage, triggerToast, currentUser } = useApp();
+  const {
+    setCurrentPage,
+    triggerToast,
+    currentUser,
+    isLiveBroadcasting,
+    studioBroadcastTitle,
+    studioActiveViewers,
+    streamQuality,
+    setStreamQuality,
+    liveMediaStream,
+  } = useApp();
 
   const [chatMessages, setChatMessages] = useState<LiveChatMessage[]>([
     { id: '1', user: 'Sister Angela M.', location: 'London, UK', text: 'Watching live from London! The presence of God is already so heavy in my living room.', time: '11:02 AM' },
@@ -89,31 +101,71 @@ export const LiveStreamView: React.FC = () => {
     }
   };
 
+  const publicVideoRef = useRef<HTMLVideoElement>(null);
+
+  // Hook live media stream from studio in real-time
+  useEffect(() => {
+    if (publicVideoRef.current) {
+      if (isLiveBroadcasting && liveMediaStream) {
+        publicVideoRef.current.srcObject = liveMediaStream;
+        publicVideoRef.current.play().catch(() => {});
+      } else {
+        publicVideoRef.current.srcObject = null;
+      }
+    }
+  }, [isLiveBroadcasting, liveMediaStream]);
+
   return (
     <div className="space-y-6 pb-16">
       {/* Stream & Chat Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Live Video Player */}
         <div className="lg:col-span-8 space-y-4">
-          <div className="bg-black rounded-3xl overflow-hidden border border-slate-800 shadow-2xl relative aspect-video flex items-center justify-center">
-            {/* Live video feed */}
+          <div className="bg-black rounded-3xl overflow-hidden border border-slate-800 shadow-2xl relative aspect-video flex items-center justify-center group">
+            {/* Real-time live video feed or replay video */}
             <video
-              src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+              ref={publicVideoRef}
+              src={!liveMediaStream || !isLiveBroadcasting ? 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4' : undefined}
               controls
               autoPlay
-              muted
-              loop
+              playsInline
+              muted={isLiveBroadcasting}
+              loop={!isLiveBroadcasting || !liveMediaStream}
               className="w-full h-full object-cover"
             />
 
             {/* Overlaid Live Badges */}
             <div className="absolute top-4 left-4 z-20 flex items-center gap-2">
-              <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-600/90 text-white text-xs font-bold shadow-lg animate-pulse backdrop-blur-sm">
-                <Radio className="w-3.5 h-3.5" /> LIVE
+              <span className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-white text-xs font-bold shadow-lg backdrop-blur-sm ${
+                isLiveBroadcasting ? 'bg-rose-600/90 animate-pulse' : 'bg-slate-700/90'
+              }`}>
+                <Radio className="w-3.5 h-3.5" /> {isLiveBroadcasting ? 'LIVE NOW' : 'OFFLINE REPLAY'}
               </span>
               <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900/80 text-white text-xs font-semibold backdrop-blur-sm">
-                <Users className="w-3.5 h-3.5 text-amber-400" /> 2,842 Watching
+                <Users className="w-3.5 h-3.5 text-amber-400" /> {studioActiveViewers.toLocaleString()} Watching
               </span>
+            </div>
+
+            {/* Overlaid Top Right Stream Quality Selector */}
+            <div className="absolute top-4 right-4 z-20 flex items-center gap-1 bg-slate-950/85 backdrop-blur-md border border-slate-700/80 rounded-xl p-1 shadow-xl">
+              <Sliders className="w-3.5 h-3.5 text-amber-400 ml-1.5 mr-0.5" />
+              <span className="text-[10px] text-slate-400 font-bold uppercase mr-1">Quality:</span>
+              {(['1080p', '720p', '480p'] as StreamQuality[]).map((q) => (
+                <button
+                  key={q}
+                  onClick={() => {
+                    setStreamQuality(q);
+                    triggerToast('Stream Quality Selected', `Playback resolution changed to ${q}.`, 'info');
+                  }}
+                  className={`px-2 py-0.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    streamQuality === q
+                      ? 'bg-amber-500 text-slate-950 font-black shadow-sm'
+                      : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                  }`}
+                >
+                  {q}
+                </button>
+              ))}
             </div>
 
             {/* Floating emojis animation overlay */}
@@ -137,10 +189,11 @@ export const LiveStreamView: React.FC = () => {
                 <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 font-semibold mb-1">
                   <span>Sunday Miracle & Encounter Celebration</span>
                   <span>·</span>
-                  <span>Broadcasted in Ultra-HD 1080p</span>
+                  <span>Broadcasted in {streamQuality} {streamQuality === '1080p' ? 'Ultra-HD' : streamQuality === '720p' ? 'HD' : 'Standard'}</span>
+                  {isLiveBroadcasting && <span className="text-emerald-500 font-bold">· Stream Healthy (60 FPS)</span>}
                 </div>
                 <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
-                  The Manifestation of the Living Rhema: Speaking What God Decrees
+                  {studioBroadcastTitle}
                 </h1>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                   Ministering: Dr. Emmanuel K. Osei & Pastor Sarah K. Osei

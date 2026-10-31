@@ -19,6 +19,7 @@ import {
   PrayerRequest,
   PrayerRequestStatus,
   ThemeMode,
+  StreamQuality,
 } from '../types';
 import {
   INITIAL_MEMBERS,
@@ -163,6 +164,18 @@ interface AppContextType {
 
   // Prayer Request
   submitPrayerRequest: (data: { name: string; phone: string; email: string; request: string; isConfidential: boolean }) => void;
+
+  // Audio Visual Broadcast Studio & Public Stream
+  isLiveBroadcasting: boolean;
+  setIsLiveBroadcasting: (val: boolean | ((prev: boolean) => boolean)) => void;
+  studioBroadcastTitle: string;
+  setStudioBroadcastTitle: (val: string) => void;
+  studioActiveViewers: number;
+  setStudioActiveViewers: (val: number | ((prev: number) => number)) => void;
+  streamQuality: StreamQuality;
+  setStreamQuality: (quality: StreamQuality) => void;
+  liveMediaStream: MediaStream | null;
+  setLiveMediaStream: (stream: MediaStream | null) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -171,8 +184,50 @@ const REFERENCE_DATE = new Date('2026-10-30T12:00:00Z');
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentPage, setCurrentPage] = useState<PageView>('home');
-  const [themeMode, setThemeMode] = useState<ThemeMode>('dark');
+  const [themeMode, setThemeModeState] = useState<ThemeMode>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('rhema_theme_mode');
+      if (stored === 'light' || stored === 'dark' || stored === 'system') {
+        return stored;
+      }
+    }
+    return 'dark';
+  });
+
+  const setThemeMode = (mode: ThemeMode) => {
+    setThemeModeState(mode);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('rhema_theme_mode', mode);
+    }
+  };
+
   const [isMobileDeviceView, setIsMobileDeviceView] = useState<boolean>(false);
+
+  // Audio Visual Broadcast Studio & Public Stream State
+  const [isLiveBroadcasting, setIsLiveBroadcasting] = useState<boolean>(true);
+  const [studioBroadcastTitle, setStudioBroadcastTitle] = useState<string>(
+    'The Manifestation of the Living Rhema: Speaking What God Decrees'
+  );
+  const [studioActiveViewers, setStudioActiveViewers] = useState<number>(1428);
+
+  const [streamQuality, setStreamQualityState] = useState<StreamQuality>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('rhema_stream_quality');
+      if (stored === '1080p' || stored === '720p' || stored === '480p') {
+        return stored as StreamQuality;
+      }
+    }
+    return '1080p';
+  });
+
+  const setStreamQuality = (quality: StreamQuality) => {
+    setStreamQualityState(quality);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('rhema_stream_quality', quality);
+    }
+  };
+
+  const [liveMediaStream, setLiveMediaStream] = useState<MediaStream | null>(null);
 
   // Authentication & CMS Dashboard Session State
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
@@ -247,8 +302,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setIsDark(active);
       if (active) {
         document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove('light');
+        document.documentElement.setAttribute('data-theme', 'dark');
+        document.body.classList.add('dark');
+        document.body.classList.remove('light');
       } else {
         document.documentElement.classList.remove('dark');
+        document.documentElement.classList.add('light');
+        document.documentElement.setAttribute('data-theme', 'light');
+        document.body.classList.remove('dark');
+        document.body.classList.add('light');
       }
     };
 
@@ -259,7 +322,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [themeMode]);
 
   const toggleDarkMode = () => {
-    setThemeMode((prev) => (prev === 'dark' ? 'light' : prev === 'light' ? 'system' : 'dark'));
+    setThemeMode(themeMode === 'dark' ? 'light' : themeMode === 'light' ? 'system' : 'dark');
   };
 
   const triggerToast = (title: string, message: string, type: 'info' | 'success' | 'alert' = 'info') => {
@@ -298,15 +361,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         twoFactorEnabled: true,
         memberSince: '2018-05-15',
       };
-    } else if (role === 'media_admin') {
+    } else if (role === 'it_media' || role === 'media_admin') {
       profile = {
         id: 'usr-03',
         name: 'Brother Samuel Mensah',
-        email: 'samuel.m@rhema.org',
+        email: 'it.media@rhema.org',
         phone: '+1 (555) 678-9012',
-        role: 'media_admin',
+        role: role === 'it_media' ? 'it_media' : 'media_admin',
         avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=200&auto=format&fit=crop&q=80',
-        department: 'Media & Livestream Broadcast',
+        department: 'IT & Media Broadcast Directorate',
         birthday: '1995-11-12',
         twoFactorEnabled: true,
         memberSince: '2020-02-01',
@@ -330,7 +393,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setIsLoggedIn(true);
     setIsInAdminDashboard(true);
     setShowLoginModal(false);
-    setAdminActiveSection('overview');
+    setAdminActiveSection(role === 'it_media' ? 'studio' : 'overview');
 
     logAuditEvent(
       'ADMIN_LOGIN_SUCCESS',
@@ -405,7 +468,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     let email = 'e.osei@encounterrhema.org';
     let dept = 'Senior Pastoral Council';
 
-    if (newRole === 'media_admin') {
+    if (newRole === 'it_media') {
+      name = 'Brother Samuel Mensah';
+      email = 'it.media@rhema.org';
+      dept = 'IT & Media Broadcast Directorate';
+    } else if (newRole === 'media_admin') {
       name = 'Brother Samuel Mensah';
       email = 'samuel.m@rhema.org';
       dept = 'Media & Livestream Broadcast';
@@ -915,6 +982,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         triggerToast,
 
         submitPrayerRequest,
+
+        isLiveBroadcasting,
+        setIsLiveBroadcasting,
+        studioBroadcastTitle,
+        setStudioBroadcastTitle,
+        studioActiveViewers,
+        setStudioActiveViewers,
+        streamQuality,
+        setStreamQuality,
+        liveMediaStream,
+        setLiveMediaStream,
       }}
     >
       {children}
